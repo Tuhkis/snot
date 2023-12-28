@@ -1,0 +1,15 @@
+[submodule "external/sr"]
+	path = external/sr
+	url = https://github.com/Tuhkis/simple-renderer.git
+[submodule "external/glfw-ez"]
+	path = external/glfw-ez
+	url = https://github.com/Tuhkis/glfw-ez
+[submodule "external/mtar"]
+	path = external/mtar
+	url = https://github.com/rxi/microtar.git
+[submodule "external/minilua"]
+	path = external/minilua
+	url = https://github.com/edubart/minilua
+[submodule "external/ini"]
+	path = external/ini
+	url = https://github.com/rxi/ini.git

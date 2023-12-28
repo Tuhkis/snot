@@ -1,0 +1,7 @@
+-I./external/sr
+-I./external/minilua
+-I./external/glfw-ez/glfw/include/GLFW
+-I./src
+-I./external
+-I./external/mtar/src
+
