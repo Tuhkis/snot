@@ -20,11 +20,13 @@ mut Ptr nullptr = (Ptr)0;
 
 MAIN {
   mut lua_State* lua;
-  /*mut mtar_t tar;
-  mut mtar_header_t tar_header;
 
-  mtar_open(&tar, "game.tar", "r");
-  mtar_read_header(&tar, &tar_header); */
+  mtar_open(&G_tar, (char*)"game.tar", (char*)"r");
+  // mtar_read_header(&G_tar, &G_tar_header);
+
+  mtar_find(&G_tar, (char*)"main.lua", &G_tar_header);
+  mut char* main = calloc(1, G_tar_header.size + 1);
+  mtar_read_data(&G_tar, main, G_tar_header.size);
 
   ASSERT(glfwInit());
   glfwWindowHint(GLFW_SAMPLES, 0);
@@ -42,19 +44,20 @@ MAIN {
 
   lua_settop(lua, 0);
 
-  luaL_dofile(lua, "main.lua");
+  luaL_dostring(lua, main);
 
   sr_free(G_rend);
   free(G_rend);
 
   lua_settop(lua, 0);
   lua_close(lua);
-  
+  free(main);
+
   glfwDestroyWindow(G_window);
   glfwTerminate();
 
-  /* mtar_close(&tar); */
-  
+  mtar_close(&G_tar);
+
   return 0;
 }
 

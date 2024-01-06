@@ -29,12 +29,13 @@ extern S32 nanosleep(const struct timespec* a, struct timespec* b);
 #endif  /* nanosleep */
 #endif /* OS_LINUX */
 
+static  struct timespec ts = default_initialiser;
+
 static inline U0 sleep_ms(F32 ms) {
 #ifdef OS_LINUX
   if (ms < 0.f) {
     return;
   }
-  mut struct timespec ts = default_initialiser;
   mut S32 res = 0;
   ts.tv_sec = ms * 0.001f;
   ts.tv_nsec = ((U32)ms % 1000) * 1000000;
@@ -50,7 +51,7 @@ static inline U0 sleep_ms(F32 ms) {
 }
 
 static mut F32 now, prev = 0.f;
-static inline F32 get_fps(F32 fps) {
+static inline F32 get_fps(void) {
   now = glfwGetTime();
   F32 delta_time = (now - prev);
   prev = now;

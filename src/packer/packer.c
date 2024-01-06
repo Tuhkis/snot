@@ -14,7 +14,7 @@
  * permission to use it. I repeat. You are allowed to use
  * this file (packer.c) as you like; Microtar was made by rxi,
  * I do not own it; it is licensed under MIT. Respect that.
- * 
+ *
  * Microtar: https://github.com/rxi/microtar
  *
  */
@@ -44,7 +44,7 @@ U0 print_help(U0);
 /** Packs the specified directory into game.tar. */
 S32 pack(const char* path);
 /** Main function. */
-S32 main(const S32 argc, const char** argv);
+S32 main(const S32 argc, char** argv);
 
 U8 is_file(const char *path) {
   mut struct stat path_stat;
@@ -63,32 +63,15 @@ U0 print_help(U0) {
   );
 }
 
-S32 pack(const char* path) {
-  mut char files[MAX_FILES][KILOBYTE] = {0};
-  {
-    mut char buf[KILOBYTE * 5000];
-    mut U32 i;
-    mut U16 newlines = 0;
-    mut FILE* f;
-    ASSERT(is_file(path));
-    f = fopen(path, "r");
-    ASSERT(f != nullptr);
-    fgets(buf, KILOBYTE * 5000, f);
-    fclose(f);
-    for (i = 0; i < KILOBYTE * 5000; ++i) {
-      if (buf[i] == '\n') ++newlines;
-    }
-    /* Re-using the iterator is so green... */
-    for (i = 0; i < newlines; ++i) {
-      
-    }
-  }
-  printf("1st file: %s\n", files[0]);
-  return 0;
-}
+S32 main(const S32 argc, char** argv) {
+  mut U16 i, ii;
+  mut char* files[MAX_FILES];
+  mut mtar_t tar;
 
-S32 main(const S32 argc, const char** argv) {
-  mut U8 i;
+  for (i = 0; i < MAX_FILES; ++i) {
+    files[i] = nullptr;
+  }
+  ii = 0;
   for (i = 1; i < argc; ++i) {
     if (argv[i][0] == (char)'-') {
       switch (argv[i][1]) {
@@ -98,13 +81,43 @@ S32 main(const S32 argc, const char** argv) {
           print_help();
           break;
         default:
-          printf("Unknown option -%c\nStop.\n", argv[i][1]);
+          printf((char*)"Unknown option -%c\nStop.\n", argv[i][1]);
+          return -1;
           break;
       }
+    } else if (is_file(argv[i])) {
+      files[ii] = argv[i];
+      ++ii;
     } else {
-      return pack(argv[i]);
+      printf((char*)"Not a file \"%s\".", argv[i]);
+      return -1;
     }
   }
+  mtar_open(&tar, "game.tar", "w");
+  for (i = 0; i < MAX_FILES; ++i) {
+    mut char* string_buf = nullptr;
+    mut FILE* f = nullptr;
+    mut size_t size;
+
+    if (files[i] == nullptr) break;
+    f = fopen(files[i], (char*)"r");
+    ASSERT(f != nullptr);
+
+    fseek(f, 0, SEEK_END);
+    size = ftell(f);
+    fseek(f, 0, SEEK_SET);
+    string_buf = malloc(size);
+    fread(string_buf, 1, size, f);
+
+    mtar_write_file_header(&tar, files[i], strlen(string_buf));
+    mtar_write_data(&tar, string_buf, strlen(string_buf));
+
+    free(string_buf);
+    fclose(f);
+  }
+  mtar_finalize(&tar);
+  mtar_close(&tar);
+
   return 0;
 }
 
